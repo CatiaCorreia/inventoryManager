@@ -16,4 +16,5 @@
 *.sql
 
 /shelf/
-/workspace.xml
+.idea/workspace.xml
+target/classes/application.properties
