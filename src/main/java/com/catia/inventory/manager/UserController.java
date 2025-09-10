@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class HelloWorld{
+public class UserController {
 
     @Autowired final UserSupervisor usuper;
 
-    public HelloWorld(UserSupervisor usuper) {
+    public UserController(UserSupervisor usuper) {
         this.usuper = usuper;
     }
 
