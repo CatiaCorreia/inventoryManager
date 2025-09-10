@@ -32,19 +32,23 @@ public class UserSupervisor {
         this.dataSource = dataSource;
     }
 
-    public void loginUser(String name, String password, Integer app) {
-        if (Authenticate(name, password)) {
-            if (isUserLoggedIn(name)) {
+    public Boolean loginUser(String name, String password) {
+        if (authenticate(name, password)) {
+            if(!isUserLoggedIn(name)){
                 log_users.add(name);
             }
+            else System.out.println("User already logged in.");
         }
+        else System.out.println("Wrong credentials");
+        return isUserLoggedIn(name);
     }
 
-    public void logoutUser(String name, String password) {
-
+    public Boolean logoutUser(String name) {
         if (isUserLoggedIn(name)) {
             log_users.remove(name);
+            System.out.println(name + " logged out.");
         }
+        return !(isUserLoggedIn(name));
     }
 
     public Boolean isUserLoggedIn(String name) {
@@ -74,7 +78,7 @@ public class UserSupervisor {
         return status;
     }
 
-    public void deleteUser(String username, String url) {
+    public String deleteUser(String username) {
 
         if (isUserLoggedIn(username)) {
             String sql = "DELETE FROM users WHERE user_name = ?";
@@ -84,11 +88,15 @@ public class UserSupervisor {
 
                 pstm.setString(1, username);
                 pstm.executeUpdate();
+                logoutUser(username);
+                return ("User " + username + " deleted.");
 
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
+                return ("Error - User not deleted.");
             }
         }
+        return ("Error - User not logged in.");
     }
 
     public String encryptPass(String pass, String salt) {
@@ -118,8 +126,8 @@ public class UserSupervisor {
     }
 
 
-    public Boolean Authenticate(String name, String password) {
-        String query = "SELECT password, salt FROM users WHERE user_name = ?";
+    public Boolean authenticate(String name, String password) {
+        String query = "SELECT hash, salt FROM users WHERE user_name = ?";
 
         try (Connection conn = dataSource.getConnection()) {
             PreparedStatement pstm = conn.prepareStatement(query);
@@ -127,16 +135,12 @@ public class UserSupervisor {
 
             ResultSet res = pstm.executeQuery();
             if (res.next()) {
-                String hash = res.getString("password");
+                String hash = res.getString("hash");
                 String salt = res.getString("salt");
 
                 System.out.println("Found user: " + name);
-                System.out.println("Hash: " + hash);
-                System.out.println("Salt: " + salt);
 
                 String hashed_pass = encryptPass(password, salt);
-
-                System.out.println("Computed hash: " + hashed_pass);
                 return hashed_pass.equals(hash);
 
             } else {
