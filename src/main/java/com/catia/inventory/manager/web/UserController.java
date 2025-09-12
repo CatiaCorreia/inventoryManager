@@ -1,5 +1,7 @@
-package com.catia.inventory.manager;
+package com.catia.inventory.manager.web;
 
+import com.catia.inventory.manager.service.UserSupervisor;
+import com.catia.inventory.manager.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,11 +12,6 @@ public class UserController {
 
     public UserController(UserSupervisor usuper) {
         this.usuper = usuper;
-    }
-
-    @GetMapping("/")
-    public String Hello(){
-        return "Hello World";
     }
 
     @PostMapping("/addUser")

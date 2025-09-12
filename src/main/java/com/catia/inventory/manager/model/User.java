@@ -1,4 +1,4 @@
-package com.catia.inventory.manager;
+package com.catia.inventory.manager.model;
 
 public class User {
 

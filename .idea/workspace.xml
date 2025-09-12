@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="0b3c46f0-963b-4cd9-9f45-0b54dd64537e" name="Changes" comment="Initial setup">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/UserSupervisor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/UserSupervisor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/model/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/UserController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/web/UserController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/UserSupervisor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/catia/inventory/manager/service/UserSupervisor.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +70,7 @@
       <module name="inventory-manager" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.catia.inventory.manager.*" />
+          <option name="PATTERN" value="com.catia.inventory.manager.model.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>

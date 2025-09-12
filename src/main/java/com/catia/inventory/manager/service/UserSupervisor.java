@@ -1,4 +1,4 @@
-package com.catia.inventory.manager;
+package com.catia.inventory.manager.service;
 
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
