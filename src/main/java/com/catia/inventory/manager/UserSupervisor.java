@@ -56,26 +56,46 @@ public class UserSupervisor {
     }
 
     public String addUser(String username, String password) {
-        String status = "No user added";
-        String salt = getSalt();
-        String encrypted_pass = encryptPass(password, salt);
+        if(password == null || password.isEmpty()) return "No user added - invalid password";
 
-        String sql = "INSERT INTO users (user_name, hash, salt) VALUES (?, ?, ?)";
+        if(uniqueUsername(username)){
+            String salt = getSalt();
+            String encrypted_pass = encryptPass(password, salt);
+
+            String sql = "INSERT INTO users (user_name, hash, salt) VALUES (?, ?, ?)";
 
 
-        try (Connection conn = dataSource.getConnection()) {
+            try (Connection conn = dataSource.getConnection()) {
+                PreparedStatement pstm = conn.prepareStatement(sql);
+
+                pstm.setString(1, username);
+                pstm.setString(2, encrypted_pass);
+                pstm.setString(3, salt);
+                pstm.executeUpdate();
+
+                return ("User added to database: " + username);
+            } catch (SQLException e) {
+                return (e.getMessage());
+            }
+        }
+        else return "That username already exists, please choose another";
+    }
+
+    private boolean uniqueUsername(String username) {
+        String sql = "SELECT COUNT(*) FROM users WHERE user_name = ?";
+        try (Connection conn = dataSource.getConnection()){
             PreparedStatement pstm = conn.prepareStatement(sql);
 
-            pstm.setString(1, username);
-            pstm.setString(2, encrypted_pass);
-            pstm.setString(3, salt);
-            pstm.executeUpdate();
-
-            status = ("User added to database: " + username);
-        } catch (SQLException e) {
-            return (e.getMessage());
+            pstm.setString(1,username);
+            ResultSet result = pstm.executeQuery();
+            if (result.next()){
+                return result.getInt("COUNT(*)") == 0;
+            }
         }
-        return status;
+        catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
     }
 
     public String deleteUser(String username) {
