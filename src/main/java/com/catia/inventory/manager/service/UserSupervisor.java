@@ -1,12 +1,16 @@
 package com.catia.inventory.manager.service;
 
+import com.catia.inventory.manager.UserRepository;
+import com.catia.inventory.manager.model.User;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.origin.SystemEnvironmentOrigin;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.sql.Connection;
@@ -24,18 +28,21 @@ public class UserSupervisor {
 
     private final Random RANDOM = new SecureRandom();
     public List<String> log_users = null;
-    @Autowired private  DataSource dataSource;
+    final private  DataSource dataSource;
+    final private UserRepository userRepository;
 
 
-    UserSupervisor(DataSource dataSource) {
+    UserSupervisor(DataSource dataSource, UserRepository userRepository) {
         log_users = new ArrayList<String>();
         this.dataSource = dataSource;
+        this.userRepository = userRepository;
     }
 
-    public Boolean loginUser(String name, String password) {
-        if (authenticate(name, password)) {
+    public Boolean loginUser(Integer id, String name, String password) {
+        if (authenticate(id, name, password)) {
             if(!isUserLoggedIn(name)){
                 log_users.add(name);
+                System.out.println(("User " + name + " logged in."));
             }
             else System.out.println("User already logged in.");
         }
@@ -43,12 +50,18 @@ public class UserSupervisor {
         return isUserLoggedIn(name);
     }
 
-    public Boolean logoutUser(String name) {
-        if (isUserLoggedIn(name)) {
-            log_users.remove(name);
-            System.out.println(name + " logged out.");
+    public Boolean logoutUser(Integer id) {
+        User u = userRepository.findById(id).orElse(null);
+
+        if(u != null) {
+            String name = u.getUsername();
+            if (isUserLoggedIn(name)) {
+                log_users.remove(name);
+                System.out.println(name + " logged out.");
+            }
+            return !(isUserLoggedIn(name));
         }
-        return !(isUserLoggedIn(name));
+        return false;
     }
 
     public Boolean isUserLoggedIn(String name) {
@@ -62,27 +75,16 @@ public class UserSupervisor {
             String salt = getSalt();
             String encrypted_pass = encryptPass(password, salt);
 
-            String sql = "INSERT INTO users (user_name, hash, salt) VALUES (?, ?, ?)";
+            User u = new User(username, encrypted_pass, salt);
 
-
-            try (Connection conn = dataSource.getConnection()) {
-                PreparedStatement pstm = conn.prepareStatement(sql);
-
-                pstm.setString(1, username);
-                pstm.setString(2, encrypted_pass);
-                pstm.setString(3, salt);
-                pstm.executeUpdate();
-
-                return ("User added to database: " + username);
-            } catch (SQLException e) {
-                return (e.getMessage());
-            }
+            userRepository.save(u);
+            return "User successfully added.";
         }
         else return "That username already exists, please choose another";
     }
 
     private boolean uniqueUsername(String username) {
-        String sql = "SELECT COUNT(*) FROM users WHERE user_name = ?";
+        String sql = "SELECT COUNT(*) FROM USERS WHERE username = ?";
         try (Connection conn = dataSource.getConnection()){
             PreparedStatement pstm = conn.prepareStatement(sql);
 
@@ -98,22 +100,17 @@ public class UserSupervisor {
         return false;
     }
 
-    public String deleteUser(String username) {
 
-        if (isUserLoggedIn(username)) {
-            String sql = "DELETE FROM users WHERE user_name = ?";
+    public String deleteUser(Integer id) {
 
-            try (Connection conn = dataSource.getConnection()) {
-                PreparedStatement pstm = conn.prepareStatement(sql);
-
-                pstm.setString(1, username);
-                pstm.executeUpdate();
-                logoutUser(username);
+        User u = userRepository.findById(id).orElse(null);
+        if(u != null){
+            String username = u.getUsername();
+            if (isUserLoggedIn(username)) {
+                userRepository.deleteById(id);
+                logoutUser(id);
                 return ("User " + username + " deleted.");
 
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-                return ("Error - User not deleted.");
             }
         }
         return ("Error - User not logged in.");
@@ -146,30 +143,16 @@ public class UserSupervisor {
     }
 
 
-    public Boolean authenticate(String name, String password) {
-        String query = "SELECT hash, salt FROM users WHERE user_name = ?";
+    public Boolean authenticate(Integer id, String name, String password) {
+        User u = userRepository.findById(id).orElse(null);
 
-        try (Connection conn = dataSource.getConnection()) {
-            PreparedStatement pstm = conn.prepareStatement(query);
-            pstm.setString(1, name);
-
-            ResultSet res = pstm.executeQuery();
-            if (res.next()) {
-                String hash = res.getString("hash");
-                String salt = res.getString("salt");
-
-                System.out.println("Found user: " + name);
-
-                String hashed_pass = encryptPass(password, salt);
-                return hashed_pass.equals(hash);
-
-            } else {
-                System.out.println("User not found: " + name);
-            }
-
-        } catch (SQLException e) {
-            System.out.println("Error during authentication: " + e.getMessage());
+        if (u == null) {
+            System.out.println("User not found: " + name);
+            return false;
         }
-        return false;
+        else {
+            String hashed_pass = encryptPass(password, u.getSalt());
+            return hashed_pass.equals(u.getHash());
+        }
     }
 }

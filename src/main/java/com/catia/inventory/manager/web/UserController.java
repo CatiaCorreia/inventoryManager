@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 public class UserController {
 
@@ -16,24 +18,24 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public String addUser(@RequestBody @Valid User user){
-        return usuper.addUser(user.getUsername(), user.getPass());
+    public String addUser(@RequestBody Map<String, String> userData){
+        return usuper.addUser(userData.get("username"), userData.get("password"));
     }
 
     @GetMapping("/login")
-    public String login(@RequestBody @Valid User user){
-        return usuper.loginUser(user.getUsername(), user.getPass()).toString();
+    public String login(@RequestBody Map<String, String> userData){
+        return usuper.loginUser(Integer.parseInt(userData.get("id")), userData.get("username"), userData.get("password")).toString();
     }
 
-    @GetMapping("/logout/{name}")
+    @GetMapping("/logout/{id}")
     @ResponseBody
-    public String logout(@PathVariable String name){
-        return usuper.logoutUser(name).toString();
+    public String logout(@PathVariable Integer id){
+        return usuper.logoutUser(id).toString();
     }
 
-    @PostMapping("/delete/{name}")
+    @PostMapping("/delete/{id}")
     @ResponseBody
-    public String deleteUser(@PathVariable String name){
-        return usuper.deleteUser(name);
+    public String deleteUser(@PathVariable Integer id){
+        return usuper.deleteUser(id);
     }
 }
