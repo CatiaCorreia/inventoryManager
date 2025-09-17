@@ -1,9 +1,14 @@
 package com.catia.inventory.manager.model;
 
+import jakarta.validation.constraints.NotEmpty;
+
 public class User {
 
     private long id;
+
+    @NotEmpty
     private String username;
+    @NotEmpty
     private String password;
 
 

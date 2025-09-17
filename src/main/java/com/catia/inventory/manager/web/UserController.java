@@ -2,6 +2,7 @@ package com.catia.inventory.manager.web;
 
 import com.catia.inventory.manager.service.UserSupervisor;
 import com.catia.inventory.manager.model.User;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +16,12 @@ public class UserController {
     }
 
     @PostMapping("/addUser")
-    public String addUser(@RequestBody User user){
+    public String addUser(@RequestBody @Valid User user){
         return usuper.addUser(user.getUsername(), user.getPass());
     }
 
     @GetMapping("/login")
-    public String login(@RequestBody User user){
+    public String login(@RequestBody @Valid User user){
         return usuper.loginUser(user.getUsername(), user.getPass()).toString();
     }
 
